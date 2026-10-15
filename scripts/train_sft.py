@@ -17,6 +17,14 @@ model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-0.5B", torch_dtype=to
 model.gradient_checkpointing_enable(); model.config.use_cache = False
 train, val = load_ultrachat(30000, 1000, a.seed)
 
+
+def has_response(ex, min_resp=16):   # keep only examples whose response survives truncation to max_len
+    return len(tok.encode(ex[0], add_special_tokens=False)) <= a.max_len - min_resp
+n0 = len(train), len(val)
+train = [ex for ex in train if has_response(ex)]
+val = [ex for ex in val if has_response(ex)]
+print(f"kept train {len(train)}/{n0[0]}, val {len(val)}/{n0[1]} (dropped prompts with no room for a response)", flush=True)
+
 decay = [p for n, p in model.named_parameters() if p.ndim >= 2]
 nodecay = [p for n, p in model.named_parameters() if p.ndim < 2]
 opt = torch.optim.AdamW([{"params": decay, "weight_decay": 0.1}, {"params": nodecay, "weight_decay": 0.0}], lr=a.lr)
@@ -49,6 +57,8 @@ for step in range(steps):
     for m in range(a.accum):
         i = (step * a.accum + m) * a.bs; ex = train[i:i + a.bs]
         b = build_sft_batch(tok, [p for p, _ in ex], [r for _, r in ex], a.max_len)
+        if (b["labels"][:, 1:] != -100).sum() == 0:
+            continue   # nothing to learn from; avoids a NaN loss that makes GradScaler skip the step
         l = loss_fn(b) / a.accum; scaler.scale(l).backward(); run += l.item()
     scaler.unscale_(opt); torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
     scaler.step(opt); scaler.update(); opt.zero_grad(set_to_none=True); sched.step()
