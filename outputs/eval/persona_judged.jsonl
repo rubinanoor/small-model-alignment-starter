@@ -1,0 +1,12 @@
+{"id": "p0", "judge_winner": "A", "winner_model": "sft"}
+{"id": "p1", "judge_winner": "A", "winner_model": "dpo"}
+{"id": "p2", "judge_winner": "A", "winner_model": "dpo"}
+{"id": "p3", "judge_winner": "A", "winner_model": "dpo"}
+{"id": "p4", "judge_winner": "B", "winner_model": "dpo"}
+{"id": "p5", "judge_winner": "A", "winner_model": "sft"}
+{"id": "p6", "judge_winner": "B", "winner_model": "dpo"}
+{"id": "p7", "judge_winner": "A", "winner_model": "dpo"}
+{"id": "p8", "judge_winner": "B", "winner_model": "sft"}
+{"id": "p9", "judge_winner": "tie", "winner_model": "tie"}
+{"id": "p10", "judge_winner": "B", "winner_model": "sft"}
+{"id": "p11", "judge_winner": "A", "winner_model": "sft"}
